@@ -17,6 +17,17 @@ Add the following on the ext2_inode struct at fs/ext2/ext2.h. This is the struct
   __le32 i_lng_fractional;
   __le32 i_accuracy;
 ```
+```=clike
+  extern int ext2_set_gps_location(struct inode *);
+  extern int ext2_get_gps_location(struct inode *, struct gps_location *);
+```
+I also defined a spinlock on the same file fs/ext2/ext2.h
+```=clike
+#include <linux/spinlock_types.h>
+#include <linux/spinlock.h>
+#include <linux/lockdep.h>
+static DEFINE_SPINLOCK(lock);
+```
 On the fs/ext2/file.c .Similar to the proj3, register the function setter and getter ext2 inode operation.
 ```=clike
 .set_gps_location = ext2_set_gps_location,
@@ -71,5 +82,22 @@ int ext2_get_gps_location(struct inode *inode, struct gps_location *gps)
 ```
 Q3- Make set_gps_location as default when ext2 is created and when file is modified.
 ---
+This part was tricky, though the implementation is simple, just have to make set_gps_location as default when ext2 is created and when file is modified.
+
+For the creation of ext2 is located at fs/ext2/namei.c. At static int ext2_create function, add the following right before calling mark_inode_dirty(inode); 
+
+```=clike
+if(inode->i_op->set_gps_location)
+  inode->i_op->set_gps_location(inode);
+  ```
+For the file modification, modification means writing something to the file informations, so the modification part is actually is located at fs/read_write.c. On the function ssize_t vps_write  before if(ret > 0), add the following.
+
+```=clike
+struct inode *inode;
+inode = file->f_path.dentry->d_inode;
+if(inode->i_op->set_gps_location)
+  inode->i_op->set_gps_location;
+  ```
+  
 Q4 -Make get_location_gps
 ---
