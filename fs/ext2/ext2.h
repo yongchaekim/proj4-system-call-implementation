@@ -353,7 +353,7 @@ struct ext2_inode {
 		} masix2;
 	} osd2;				/* OS dependent 2 */
 	
-	/* OSPROJ4 */
+	/* OS PROJ4 */
 	__le32 i_lat_integer;
 	__le32 i_lat_fractional;
 	__le32 i_lng_integer;
