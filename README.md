@@ -2,6 +2,8 @@
 ---
 Q1- Make set_location_gps
 ---
+This is easiest part of all, just get the gps_location from the user to kernel, then check error and the conditions for the ranges of the gps location value. then memcpy the gps_location struct to a global struct of gps_location. The global struct of the gps_location is needed so that we can set the gps_location to the inode of ext2 file.
+
 Q2- Adding ext2- inode function for setter and getter operations
 ---
 Add the following function pointers to the inode struct at include/linux/fs.h.
@@ -101,3 +103,6 @@ if(inode->i_op->set_gps_location)
   
 Q4 -Make get_location_gps
 ---
+This is also easy since we are given the users pathname and get gps_location from the ext2 to the users. Again we have to get users pathname to the kernel by copy_from_user function. By using the pathname in the kernel get the path struct by kern_path(pathname, LOOKUP_FOLLOW, &path). By using the path get the following inode entry. Then check the inode permission whether the file is readable or not.
+
+Then after checking the permission of the inode check if GPS coordinates are embedded in the file by calling if(inode->i_op->get_gps_location). After the getting the gps_location struct from the get_gps_location function then copy that information to the user gps_location by copy_to_user function.
